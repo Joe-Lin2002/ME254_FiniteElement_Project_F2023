@@ -1,12 +1,12 @@
 % Using reduced or full integration
-function [GP,w] = ReducedFull()
+function [gp,w] = ReducedFull(flag)
 %Full or reduced integration
-intchoice = input('Enter 1 for reduced integration, 2 for full integration: ');
+intchoice = flag;
 if intchoice == 1
-    GP = 0;
+    gp = [0, 0];
     w = 4;
 else
-    GP = [-sqrt(1/3) -sqrt(1/3)
+    gp = [-sqrt(1/3) -sqrt(1/3)
       sqrt(1/3) -sqrt(1/3)
       sqrt(1/3) sqrt(1/3)
       -sqrt(1/3) sqrt(1/3)];

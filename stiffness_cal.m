@@ -1,4 +1,4 @@
-function K = stiffness_cal(coordinates, matprop)
+function K = stiffness_cal(coordinates, matprop, flag)
 %% Connectivity matrix
 elements = [1, 2, 3, 4];
 
@@ -7,11 +7,8 @@ v = matprop(2);
 E = matprop(3);
 
 %% Define Gauss quadrature points and weights for full integration
-gauss_points = [-1/sqrt(3), -1/sqrt(3);
-    1/sqrt(3), -1/sqrt(3);
-    1/sqrt(3),  1/sqrt(3);
-    -1/sqrt(3),  1/sqrt(3)];
-weights = [1, 1, 1, 1];
+% Flag: 1 for reduced integration, 2 for full integration
+[gauss_points,weights] = ReducedFull(flag);
 
 %% Initialize global stiffness matrix
 K = zeros(8, 8);
