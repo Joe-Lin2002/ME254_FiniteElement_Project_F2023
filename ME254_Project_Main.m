@@ -5,3 +5,5 @@
 E = 1e9; % Pa
 nu = 0.3; % Poisson ratio
 P = 1; % KN
+
+% Read Data
