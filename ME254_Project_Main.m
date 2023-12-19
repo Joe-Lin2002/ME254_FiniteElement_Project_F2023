@@ -6,5 +6,6 @@ clear all;
 close all;
 
 %% Inputting File
-directory = 'Project-files/'; % Input files directory
+directory = 'Project-files/input_coarse_mesh/'; % Input files directory
 data = read_input(directory); % Input Reading
+
