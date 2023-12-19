@@ -6,7 +6,7 @@ clear all;
 close all;
 
 %% Inputting File
-directory = 'Project-files/input_coarse_mesh/'; % Input files directory
+directory = 'Project-files/input_fine_mesh/'; % Input files directory
 data = read_input(directory); % Input Reading
 
 %% Finding Stiffness Matrix
@@ -14,7 +14,53 @@ data = read_input(directory); % Input Reading
 flag = 2;
 
 for i = 1:size(data.elemconn,1)
-    stiff{i} = stiffness_cal([data.coord(data.elemconn(i,1:4),1),data.coord(data.elemconn(i,1:4),2)], ...
+    stiff_local{i} = stiffness_cal([data.coord(data.elemconn(i,1:4),1),data.coord(data.elemconn(i,1:4),2)], ...
         data.matprop, flag);
 end
 
+%% Global Stiffness Matrix Assemble
+stiff_global = zeros(2*length(data.nodeid)); % Preallocate the global stiffness matrix
+
+for i = 1:length(stiff_local)
+    % Get the local stiffness matrix for the current element
+    K_local = stiff_local{i};
+    
+    % Get the global node numbers for the current element
+    element_nodes = data.elemconn(i,:);
+    
+    % Get the global DOFs for the current element
+    global_dofs = [2*element_nodes(1)-1, 2*element_nodes(1), ...
+                   2*element_nodes(2)-1, 2*element_nodes(2), ...
+                   2*element_nodes(3)-1, 2*element_nodes(3), ...
+                   2*element_nodes(4)-1, 2*element_nodes(4)];
+    
+    % Map the local stiffness matrix to the global stiffness matrix
+    for ii = 1:length(global_dofs)
+        for jj = 1:length(global_dofs)
+            stiff_global(global_dofs(ii), global_dofs(jj)) = ...
+                stiff_global(global_dofs(ii), global_dofs(jj)) + K_local(ii, jj);
+        end
+    end
+end
+
+%% Apply boundary conditions
+for i = 1:length(data.nodeid)
+    % For each node, check the boundary condition code
+    if data.bc_code(i,1) == 1
+        % If the x DOF is constrained, modify the global stiffness matrix
+        dof_x = 2*i - 1;
+        stiff_global(dof_x,:) = 0; % Set the entire row to zero
+        stiff_global(:,dof_x) = 0; % Set the entire column to zero
+    end
+    if data.bc_code(i,2) == 1
+        % If the y DOF is constrained, modify the global stiffness matrix
+        dof_y = 2*i;
+        stiff_global(dof_y,:) = 0; % Set the entire row to zero
+        stiff_global(:,dof_y) = 0; % Set the entire column to zero
+    end
+end
+
+force = reshape([data.loads],size(stiff_global,1),1);
+displacement = stiff_global\force;
+
+plot_contour_map(data, displacement);
