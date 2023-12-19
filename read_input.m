@@ -1,3 +1,9 @@
-function [outputArg1,outputArg2] = read_input(inputArg1,inputArg2)
+function data = read_input(directory)
+
+files = dir([directory, '*.txt']);
+
+for i=1:length(files)
+    data{i} = readmatrix([directory,files(i).name]); %Reading file
+end
 
 end

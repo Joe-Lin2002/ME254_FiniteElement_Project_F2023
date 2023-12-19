@@ -1,0 +1,9 @@
+% Main file for the project
+%% ME254_Project_Main, Cady Brunecz, Junyi Lin, Dec11 2023
+
+directory = 'Project-files/input_coarse_mesh/';
+files = dir([directory, '*.txt']);
+
+for i=1:length(files)
+    data{i} = readmatrix(direfiles(1).name); %Reading file
+end
