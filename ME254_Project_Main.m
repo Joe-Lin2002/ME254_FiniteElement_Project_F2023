@@ -6,7 +6,7 @@ clear all;
 close all;
 
 %% Inputting File
-directory = 'Project-files/input_fine_mesh/'; % Input files directory
+directory = 'Project-files/input_coarse_mesh/'; % Input files directory
 data = read_input(directory); % Input Reading
 
 %% Finding Stiffness Matrix
@@ -62,5 +62,11 @@ end
 
 force = reshape([data.loads],size(stiff_global,1),1);
 displacement = stiff_global\force;
+
+for i = 1:length(displacement)
+    if isnan(displacement(i))
+        displacement(i)=0;
+    end
+end
 
 plot_contour_map(data, displacement);
