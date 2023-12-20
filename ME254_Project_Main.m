@@ -12,10 +12,12 @@ data = read_input(directory); % Input Reading
 %% Finding Stiffness Matrix
 % Flag: 1 for reduced integration, 2 for full integration
 flag = 1;
+% plane_flag: 1 for plane stress, 2 for plane strain
+plane_flag = 2;
 
 for i = 1:size(data.elemconn,1)
-    stiff_local{i} = stiffness_cal([data.coord(data.elemconn(i,1:4),1),data.coord(data.elemconn(i,1:4),2)], ...
-        data.matprop, flag);
+    [stiff_local{i}, B{i}] = stiffness_cal([data.coord(data.elemconn(i,1:4),1),data.coord(data.elemconn(i,1:4),2)], ...
+        data.matprop, flag, plane_flag);
 end
 
 %% Global Stiffness Matrix Assemble
@@ -70,3 +72,10 @@ for i = 1:length(displacement)
 end
 
 plot_contour_map(data, displacement);
+
+nodal_stress = 0;
+for i = 1:length(B)
+    nodal_stress = nodal_stress + calculate_nodal_stress(data, displacement, B{i}, plane_flag);
+end
+
+plot_stress_contour_map(data, nodal_stress);

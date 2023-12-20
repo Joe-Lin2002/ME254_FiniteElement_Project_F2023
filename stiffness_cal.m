@@ -1,4 +1,4 @@
-function K = stiffness_cal(coordinates, matprop, flag)
+function [K,B] = stiffness_cal(coordinates, matprop, flag, plane_flag)
 %% Connectivity matrix
 elements = [1, 2, 3, 4];
 
@@ -46,9 +46,7 @@ for i = 1:size(elements, 1)
         B = alpha*beta*gamma;
 
         % Material matrix
-        D = (E/(1-v^2)) * [1, v, 0;
-            v, 1, 0;
-            0, 0, (1-v)/2];
+        D = PlaneStressStrain(matprop, plane_flag);
 
         % Compute element stiffness matrix
         I = B' * D * B * w * detJ * t;
