@@ -13,7 +13,7 @@ data = read_input(directory); % Input Reading
 % Flag: 1 for reduced integration, 2 for full integration
 flag = 2;
 % plane_flag: 1 for plane stress, 2 for plane strain
-plane_flag = 2;
+plane_flag = 1;
 
 for i = 1:size(data.elemconn,1)
     [stiff_local{i}, B{i}] = stiffness_cal([data.coord(data.elemconn(i,1:4),1),data.coord(data.elemconn(i,1:4),2)], ...
@@ -71,11 +71,10 @@ for i = 1:length(displacement)
     end
 end
 
-show_displacements(data.elemconn, data.coord, sqrt(displacement(1:2:end).^2 + displacement(2:2:end).^2), displacement(1:2:end), displacement(2:2:end), length(data.nodeid));
-
 nodal_stress = 0;
 for i = 1:length(B)
     nodal_stress = nodal_stress + calculate_nodal_stress(data, displacement, B{i}, plane_flag);
 end
 
+show_displacements(data.elemconn, data.coord, sqrt(displacement(1:2:end).^2 + displacement(2:2:end).^2), displacement(1:2:end), displacement(2:2:end), length(data.nodeid));
 plot_stress_contour_map(data, nodal_stress);
