@@ -6,14 +6,14 @@ clear all;
 close all;
 
 %% Inputting File
-directory = 'Project-files/input_fine_mesh/'; % Input files directory
+directory = 'Project-files/input_coarse_mesh/'; % Input files directory
 data = read_input(directory); % Input Reading
 
 %% Finding Stiffness Matrix
 % Flag: 1 for reduced integration, 2 for full integration
 flag = 2;
 % plane_flag: 1 for plane stress, 2 for plane strain
-plane_flag = 1;
+plane_flag = 2;
 
 for i = 1:size(data.elemconn,1)
     [stiff_local{i}, B{i}] = stiffness_cal([data.coord(data.elemconn(i,1:4),1),data.coord(data.elemconn(i,1:4),2)], ...
@@ -47,20 +47,20 @@ end
 
 %% Apply boundary conditions
 for i = 1:length(data.nodeid)
-    % For each node, check the boundary condition code
     if data.bc_code(i,1) == 1
-        % If the x DOF is constrained, modify the global stiffness matrix
         dof_x = 2*i - 1;
-        stiff_global(dof_x,:) = 0; % Set the entire row to zero
-        stiff_global(:,dof_x) = 0; % Set the entire column to zero
+        stiff_global(:, dof_x) = 0;
+        stiff_global(dof_x, :) = 0;
+        stiff_global(dof_x, dof_x) = 1e10; % Large number
     end
     if data.bc_code(i,2) == 1
-        % If the y DOF is constrained, modify the global stiffness matrix
         dof_y = 2*i;
-        stiff_global(dof_y,:) = 0; % Set the entire row to zero
-        stiff_global(:,dof_y) = 0; % Set the entire column to zero
+        stiff_global(:, dof_y) = 0;
+        stiff_global(dof_y, :) = 0;
+        stiff_global(dof_y, dof_y) = 1e10; % Large number
     end
 end
+
 
 force = reshape([data.loads],size(stiff_global,1),1);
 displacement = stiff_global\force;
@@ -71,7 +71,7 @@ for i = 1:length(displacement)
     end
 end
 
-plot_contour_map(data, displacement);
+show_displacements(data.elemconn, data.coord, sqrt(displacement(1:2:end).^2 + displacement(2:2:end).^2), displacement(1:2:end), displacement(2:2:end), length(data.nodeid));
 
 nodal_stress = 0;
 for i = 1:length(B)
