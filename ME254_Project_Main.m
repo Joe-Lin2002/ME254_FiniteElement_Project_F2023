@@ -6,12 +6,12 @@ clear all;
 close all;
 
 %% Inputting File
-directory = 'Project-files/input_coarse_mesh/'; % Input files directory
+directory = 'Project-files/input_fine_mesh/'; % Input files directory
 data = read_input(directory); % Input Reading
 
 %% Finding Stiffness Matrix
 % Flag: 1 for reduced integration, 2 for full integration
-flag = 2;
+flag = 1;
 % plane_flag: 1 for plane stress, 2 for plane strain
 plane_flag = 1;
 
@@ -23,26 +23,26 @@ end
 %% Global Stiffness Matrix Assemble
 stiff_global = zeros(2*length(data.nodeid)); % Preallocate the global stiffness matrix
 
+% Create a mapping array from local to global node numbers
+node_mapping = zeros(max(data.elemconn(:)), 1);
+node_mapping(data.nodeid) = 1:length(data.nodeid);
+
+% Assemble the global stiffness matrix using the mapping
 for i = 1:length(stiff_local)
-    % Get the local stiffness matrix for the current element
     K_local = stiff_local{i};
-    
-    % Get the global node numbers for the current element
     element_nodes = data.elemconn(i,:);
+    global_nodes = node_mapping(element_nodes);
     
-    % Get the global DOFs for the current element
-    global_dofs = [2*element_nodes(1)-1, 2*element_nodes(1), ...
-                   2*element_nodes(2)-1, 2*element_nodes(2), ...
-                   2*element_nodes(3)-1, 2*element_nodes(3), ...
-                   2*element_nodes(4)-1, 2*element_nodes(4)];
+    % Identify global degrees of freedom for the element
+    global_dofs = [2 * global_nodes - 1, 2 * global_nodes];
     
-    % Map the local stiffness matrix to the global stiffness matrix
-    for ii = 1:length(global_dofs)
-        for jj = 1:length(global_dofs)
-            stiff_global(global_dofs(ii), global_dofs(jj)) = ...
-                stiff_global(global_dofs(ii), global_dofs(jj)) + K_local(ii, jj);
-        end
-    end
+    % Check the ordering of nodes and DOFs
+   disp(['Element ' num2str(i) ': Local Nodes ' num2str(element_nodes) ', Global Nodes ' num2str(global_nodes') ', Global DOFs ' num2str(global_dofs(1)) ' ' num2str(global_dofs(2))]);
+
+    
+    % Assemble the local stiffness matrix into the global stiffness matrix
+    stiff_global(global_dofs(:), global_dofs(:)) = ...
+        stiff_global(global_dofs(:), global_dofs(:)) + K_local(:,:);
 end
 
 %% Apply boundary conditions
@@ -51,19 +51,20 @@ for i = 1:length(data.nodeid)
         dof_x = 2*i - 1;
         stiff_global(:, dof_x) = 0;
         stiff_global(dof_x, :) = 0;
-        stiff_global(dof_x, dof_x) = 1e10; % Large number
+        stiff_global(dof_x, dof_x) = 1e6; % Large number
     end
     if data.bc_code(i,2) == 1
         dof_y = 2*i;
         stiff_global(:, dof_y) = 0;
         stiff_global(dof_y, :) = 0;
-        stiff_global(dof_y, dof_y) = 1e10; % Large number
+        stiff_global(dof_y, dof_y) = 1e6; % Large number
     end
 end
 
 
 force = reshape([data.loads],size(stiff_global,1),1);
-displacement = stiff_global\force;
+stiff_global = stiff_global + 1e-6 * eye(size(stiff_global));
+displacement = gmres(stiff_global, force, [], 1e-6);
 
 for i = 1:length(displacement)
     if isnan(displacement(i))
