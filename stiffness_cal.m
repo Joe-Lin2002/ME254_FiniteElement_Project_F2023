@@ -33,6 +33,9 @@ for i = 1:size(elements, 1)
         % Here, dNdxi is a 2x4 matrix, and node_coords is a 4x2 matrix
         J = dNdxi * node_coords;  % Transpose dNdxi to get a 4x2 matrix
         detJ = det(J);
+        if abs(detJ) < 1e-10
+    disp('Warning: Singular Jacobian matrix');
+end
 
         % Construct B matrix (strain-displacement matrix)
         alpha = [1,0,0,0;
