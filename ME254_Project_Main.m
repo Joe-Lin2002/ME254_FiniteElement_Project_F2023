@@ -69,17 +69,9 @@ force(2:2:end) = data.loads(:,2);
 
 displacement = stiff_global\force;
 
-for i = 1:length(displacement)
-    if isnan(displacement(i))
-        displacement(i)=0;
-    end
-end
-
 show_displacements(data.elemconn, data.coord, sqrt(displacement(1:2:end).^2 + displacement(2:2:end).^2), displacement(1:2:end), displacement(2:2:end), length(data.nodeid));
 
 nodal_stress = 0;
-for i = 1:length(B)
-    nodal_stress = nodal_stress + calculate_nodal_stress(data, displacement, B{i}, plane_flag);
-end
+nodal_stress =calculate_nodal_stress(data, displacement, B, plane_flag);
 
 plot_stress_contour_map(data, nodal_stress);

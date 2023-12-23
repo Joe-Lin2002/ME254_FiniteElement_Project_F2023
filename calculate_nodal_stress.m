@@ -3,10 +3,6 @@ function nodal_stress = calculate_nodal_stress(data, displacement, B, plane_flag
     nodal_stress = zeros(length(data.nodeid), 3);  % For 2D: sigma_x, sigma_y, tau_xy
     nodal_stress_count = zeros(length(data.nodeid), 1);  % To count the contributions for averaging
 
-    % Material properties
-    E = data.matprop(3);   % Young's modulus
-    nu = data.matprop(2);  % Poisson's ratio
-
     % Plane stress constitutive matrix
     D = PlaneStressStrain(data.matprop, plane_flag);
 
@@ -21,7 +17,7 @@ function nodal_stress = calculate_nodal_stress(data, displacement, B, plane_flag
         element_displacements = displacement(element_displacement_indices);
 
         % Calculate the strain for the element using B matrix
-        element_strain = B * element_displacements;
+        element_strain = B{i} * element_displacements;
 
         % Calculate the stress for the element
         element_stress = D * element_strain;
