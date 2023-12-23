@@ -11,9 +11,9 @@ data = read_input(directory); % Input Reading
 
 %% Finding Stiffness Matrix
 % Flag: 1 for reduced integration, 2 for full integration
-flag = 2;
+flag = 1;
 % plane_flag: 1 for plane stress, 2 for plane strain
-plane_flag = 1;
+plane_flag = 2;
 
 for i = 1:size(data.elemconn,1)
     [stiff_local{i}, B{i}] = stiffness_cal([data.coord(data.elemconn(i,1:4),1),data.coord(data.elemconn(i,1:4),2)], ...
